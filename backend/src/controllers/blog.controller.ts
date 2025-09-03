@@ -16,7 +16,6 @@ export const createBlog = async (req: Request, res: Response) => {
 
     // Validation is now handled by middleware
 
-    // First, create the blog without slug
     const blog = await prisma.blog.create({
       data: {
         title,
