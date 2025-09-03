@@ -45,6 +45,7 @@ model Blog {
   comments  Comment[]
   likes     Like[]    
   savedBy   SavedBlog[] 
+  slug      String?   @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

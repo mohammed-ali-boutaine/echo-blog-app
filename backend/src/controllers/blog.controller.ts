@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../prisma";
+import slugify from "slugify";
 
 export const createBlog = async (req: Request, res: Response) => {
   try {
@@ -15,6 +16,7 @@ export const createBlog = async (req: Request, res: Response) => {
 
     // Validation is now handled by middleware
 
+    // First, create the blog without slug
     const blog = await prisma.blog.create({
       data: {
         title,
@@ -40,9 +42,34 @@ export const createBlog = async (req: Request, res: Response) => {
       },
     });
 
+    // Generate unique slug using title and blog id
+    const slug = `${slugify(title, { lower: true, strict: true })}-${blog.id}`;
+    // Update blog with slug
+    const updatedBlog = await prisma.blog.update({
+      where: { id: blog.id },
+      data: { slug },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        tags: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+    });
+
     return res.status(201).json({
       status: "success",
-      data: { blog },
+      data: { blog: updatedBlog },
     });
   } catch (error) {
     console.error("Create blog error:", error);
